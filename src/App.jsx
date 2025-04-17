@@ -2,9 +2,15 @@
 
 import './App.css';
 import React from 'react';
+import Header from './components/Header';
+import Body from './components/Body';
 
 function App() {
-   return <h1 className=' bg-black text-white'>hello world</h1>;
+   return (
+      <div className=''>
+         <Body />
+      </div>
+   );
 }
 
 export default App;
