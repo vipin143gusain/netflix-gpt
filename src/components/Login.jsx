@@ -1,12 +1,39 @@
 /** @format */
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Header from './Header';
+import { checkValidateData } from '../utils/validation';
 
 const Login = () => {
    const [isSignToggle, setIsSignToggle] = useState(false);
-   function signUpHandler(params) {
+   const [errorMessage, setErrorMessage] = useState(null);
+   const email = useRef(null);
+   const password = useRef(null);
+   const username = useRef(null);
+
+   function signUpHandler() {
       setIsSignToggle(!isSignToggle);
+
+      // Clear input fields
+      if (email.current) email.current.value = '';
+      if (password.current) password.current.value = '';
+      if (username.current) username.current.value = '';
+      setErrorMessage(null); // Optional: also clear errors
+   }
+
+   function formSubmitHandler(e) {
+      e.preventDefault();
+
+      const emailValue = email.current?.value;
+      const passwordValue = password.current?.value;
+      const usernameValue = isSignToggle ? username.current?.value : null;
+
+      const message = checkValidateData(
+         emailValue,
+         passwordValue,
+         usernameValue
+      );
+      setErrorMessage(message);
    }
    return (
       <div>
@@ -18,12 +45,15 @@ const Login = () => {
             />
          </div>
 
-         <form className='absolute w-3/12 p-12 my-36 mx-auto  right-0 left-0 text-white rounded bg-black/70 bg-opacity-10 '>
+         <form
+            onSubmit={formSubmitHandler}
+            className='absolute w-3/12 p-12 my-36 mx-auto  right-0 left-0 text-white rounded bg-black/70 bg-opacity-10 '>
             <h1 className='text-white text-3xl font-bold mb-6'>
                {isSignToggle ? 'Sign Up' : 'Sign In'}
             </h1>
             {isSignToggle && (
                <input
+                  ref={username}
                   type='text'
                   placeholder='Full Name'
                   className='p-2 mt-4 w-full bg-gray-700 rounded bg-opacity-50'
@@ -31,16 +61,20 @@ const Login = () => {
             )}
             <br />
             <input
+               ref={email}
                type='text'
                placeholder='Email or Phone'
                className='p-2 mt-4 w-full bg-gray-700 rounded bg-opacity-50'
             />
             <br />
             <input
+               ref={password}
                type='password'
                placeholder='Password'
                className='p-2 mt-4  w-full  bg-gray-700 rounded'
             />
+
+            <p className='text-red-500 p-2 text-normal'>{errorMessage}</p>
             <button className='p-2 mt-6 bg-red-500  w-full rounded'>
                {isSignToggle ? 'Sign Up' : 'Sign In'}
             </button>
