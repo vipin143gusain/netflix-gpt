@@ -3,17 +3,20 @@
 import React, { useRef, useState } from 'react';
 import Header from './Header';
 import { checkValidateData } from '../utils/validation';
-
+import {
+   createUserWithEmailAndPassword,
+   signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { auth } from '../utils/firebase';
 const Login = () => {
-   const [isSignToggle, setIsSignToggle] = useState(false);
+   const [isSignInForm, setIsSignInForm] = useState(false);
    const [errorMessage, setErrorMessage] = useState(null);
    const email = useRef(null);
    const password = useRef(null);
    const username = useRef(null);
 
-   function signUpHandler() {
-      setIsSignToggle(!isSignToggle);
-
+   function toggleSignInForm() {
+      setIsSignInForm(!isSignInForm);
       // Clear input fields
       if (email.current) email.current.value = '';
       if (password.current) password.current.value = '';
@@ -21,18 +24,50 @@ const Login = () => {
       setErrorMessage(null); // Optional: also clear errors
    }
 
-   function formSubmitHandler(e) {
+   function handleButtonClick(e) {
       e.preventDefault();
 
       const emailValue = email.current?.value;
       const passwordValue = password.current?.value;
-      const usernameValue = isSignToggle ? username.current?.value : null;
+      const usernameValue = isSignInForm ? username.current?.value : null;
 
       const message = checkValidateData(
          emailValue,
          passwordValue,
          usernameValue
       );
+
+      // if (message) return;
+
+      if (isSignInForm) {
+         //Sign Up Logic
+         createUserWithEmailAndPassword(auth, emailValue, passwordValue)
+            .then((userCredential) => {
+               // Signed in
+               const user = userCredential.user;
+               console.log('user', user);
+            })
+            .catch((error) => {
+               const errorCode = error.code;
+               const errorMessage = error.message;
+               setErrorMessage(errorCode + ' - ' + errorMessage);
+            });
+      } else {
+         //Sign in Logic
+
+         signInWithEmailAndPassword(auth, emailValue, passwordValue)
+            .then((userCredential) => {
+               // Signed in
+               const user = userCredential.user;
+               console.log('Login User =', user);
+            })
+            .catch((error) => {
+               const errorCode = error.code;
+               const errorMessage = error.message;
+               setErrorMessage(errorCode + ' - ' + errorMessage);
+            });
+      }
+
       setErrorMessage(message);
    }
    return (
@@ -46,12 +81,12 @@ const Login = () => {
          </div>
 
          <form
-            onSubmit={formSubmitHandler}
+            onSubmit={handleButtonClick}
             className='absolute w-3/12 p-12 my-36 mx-auto  right-0 left-0 text-white rounded bg-black/70 bg-opacity-10 '>
             <h1 className='text-white text-3xl font-bold mb-6'>
-               {isSignToggle ? 'Sign Up' : 'Sign In'}
+               {isSignInForm ? 'Sign Up' : 'Sign In'}
             </h1>
-            {isSignToggle && (
+            {isSignInForm && (
                <input
                   ref={username}
                   type='text'
@@ -76,11 +111,13 @@ const Login = () => {
 
             <p className='text-red-500 p-2 text-normal'>{errorMessage}</p>
             <button className='p-2 mt-6 bg-red-500  w-full rounded'>
-               {isSignToggle ? 'Sign Up' : 'Sign In'}
+               {isSignInForm ? 'Sign Up' : 'Sign In'}
             </button>
 
-            <p className='py-6 text-sm cursor-pointer' onClick={signUpHandler}>
-               {!isSignToggle
+            <p
+               className='py-6 text-sm cursor-pointer'
+               onClick={toggleSignInForm}>
+               {!isSignInForm
                   ? 'New to Netflix? Sign up now'
                   : 'Click for Sign In'}
             </p>
